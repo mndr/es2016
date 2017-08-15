@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import {Markup, Editor, Container, Column, Row, RuleInput, RuleLabel, StyleInput, Button, Document} from './styled'
+import hljs from 'highlight.js'
 
 class App extends Component {
 
@@ -76,9 +77,67 @@ class App extends Component {
     })
   }
 
+  convertToMarkup = (text = "") => {
+      return {
+        __html: hljs.highlightAuto(text).value
+      }
+  }
+
+  language = (newRules) => {
+    return () => ({
+      contains: [
+        ...newRules
+      ]
+    })
+  }
+
+  registerLanguage = (state) => {
+    let {rules} = state
+    let ruleObjects = []
+    for (let i=0; i<rules; i++) {
+      let newRule = {
+        className: state[`name${i}`],
+        begin: state[`begin${i}`],
+        end: state[`end${i}`]
+      }
+      let {className, begin, end} = newRule
+      if (
+        className.length > 1 &&
+        begin.length > 1 &&
+        end.length > 1
+      ) {
+        begin = new RegExp(begin)
+        end = new RegExp(end)
+        ruleObjects.push(newRule)
+      }
+    }
+    hljs.registerLanguage('language', this.language(ruleObjects))
+    hljs.configure({
+      languages: ['language']
+    })
+  }
+
+  componentWillUpdate(nextProps, nextState) {
+    this.registerLanguage(nextState)
+  }
+
+  prepareStyles = () => {
+    let {rules} = this.state
+    let styles = []
+    for (let i=0; i<rules; i++) {
+      styles.push(`
+        .hljs-${this.state['name' + i]} {
+          ${this.state['style' + i]}
+        }
+      `)
+    }
+    let newStyles = "".concat(styles).replace(',', '')
+    return newStyles
+  }
+
   render() {
-    let {value} = this.state
-    let {handleChange, newFields, rules} = this
+    let {editor} = this.state
+    let {handleChange, newFields, rules, convertToMarkup, prepareStyles} = this
     return (
       <Container>
         <Column>
@@ -95,11 +154,14 @@ class App extends Component {
           </Button>
           <Document>
             <Editor
-              name={'Editor'}
-              value={value}
+              name={'editor'}
+              value={editor}
               onChange={handleChange}
             />
-            <Markup/>
+            <Markup
+              customStyles={prepareStyles()}
+              dangerouslySetInnerHTML={convertToMarkup(editor)}
+            />
           </Document>
         </Column>
       </Container>
