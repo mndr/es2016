@@ -1,10 +1,7 @@
 import React, { Component } from 'react'
 import {Markup, Editor, Container, Column, Row, RuleInput, RuleLabel, StyleInput, Button, Document} from './styled'
 import hljs from 'highlight.js'
-import {rando} from './utils'
-
-console.log(rando)
-console.log(rando.color())
+import {rando, getRandomPoem} from './utils'
 
 class App extends Component {
 
@@ -139,9 +136,23 @@ class App extends Component {
     return newStyles
   }
 
+  getRandomText = async () => {
+    try {
+      let poem = await getRandomPoem()
+      this.handleChange({
+        target: {
+          name: 'editor',
+          value: poem
+        }
+      })
+    } catch (error) {
+      console.log("getRandomText error", error)
+    }
+  }
+
   render() {
     let {editor} = this.state
-    let {handleChange, newFields, rules, convertToMarkup, prepareStyles} = this
+    let {handleChange, newFields, rules, convertToMarkup, prepareStyles, getRandomText} = this
     return (
       <Container>
         <Column>
@@ -153,8 +164,10 @@ class App extends Component {
           </Button>
         </Column>
         <Column>
-          <Button>
-            Random textarea
+          <Button
+            onClick={getRandomText}
+          >
+            Random Text
           </Button>
           <Document>
             <Editor
