@@ -53,13 +53,13 @@ class ColorGenerator extends Random {
 
 export const rando = new ColorGenerator()
 
-const shakespeareAPI = "http://api.graph.cool/simple/v1/shaekspeare"
+const shakespeareApi = "https://api.graph.cool/simple/v1/shakespeare"
 
 let options = () => {
   return {
     method: "POST",
     headers: {
-      "Content=Type": "application/json"
+      "Content-Type": "application/json"
     },
     body: JSON.stringify({
       query: `{
@@ -76,3 +76,7 @@ let options = () => {
     })
   }
 }
+
+fetch(shakespeareApi, options()).then( response => response.json()).then(json => {
+  console.log(json)
+})
